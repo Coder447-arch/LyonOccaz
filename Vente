@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LyonOccaz - Petites annonces</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f7f9fc;
+      color: #222;
+    }
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo {
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+    .menu-toggle {
+      font-size: 28px;
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      user-select: none;
+    }
+    nav.menu {
+      display: none;
+      position: absolute;
+      top: 60px;
+      right: 1.5rem;
+      background: white;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      padding: 0.5rem 1rem;
+      min-width: 120px;
+    }
+    nav.menu a {
+      display: block;
+      padding: 0.6rem 0;
+      color: #2c3e50;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    nav.menu a:hover {
+      background: #f0f0f0;
+    }
+    main {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    section {
+      background: white;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      margin-top: 0;
+      color: #2c3e50;
+    }
+    form input, form textarea {
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    form button {
+      background: #2c3e50;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    form button:hover {
+      background: #1a2736;
+    }
+    .annonce {
+      border-bottom: 1px solid #ddd;
+      padding: 1rem 0;
+      position: relative;
+    }
+    .annonce:last-child {
+      border-bottom: none;
+    }
+    .annonce h3 {
+      margin: 0 0 0.3rem 0;
+      color: #34495e;
+    }
+    .annonce p {
+      margin: 0.2rem 0;
+    }
+    .delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #e74c3c;
+      border: none;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .delete-btn:hover {
+      background: #c0392b;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">LyonOccaz</div>
+  <button class="menu-toggle" aria-label="Menu" onclick="toggleMenu()">☰</button>
+  <nav class="menu" id="menu">
+    <a href="#acheter">Acheter</a>
+    <a href="#vendre">Vendre</a>
+  </nav>
+</header>
+
+<main>
+  <section id="vendre">
+    <h2>Vendre un objet</h2>
+    <form id="formAnnonce">
+      <label for="titre">Titre de l'annonce</label>
+      <input type="text" id="titre" name="titre" required placeholder="Ex : Vélo d'occasion" />
+      
+      <label for="description">Description</label>
+      <textarea id="description" name="description" rows="4" required placeholder="Description détaillée"></textarea>
+      
+      <label for="prix">Prix (€)</label>
+      <input type="number" id="prix" name="prix" required min="0" placeholder="Ex : 100" />
+      
+      <label for="contact">Contact (email ou téléphone)</label>
+      <input type="text" id="contact" name="contact" required placeholder="Ex : monemail@mail.com" />
+      
+      <button type="submit">Publier</button>
+    </form>
+  </section>
+
+  <section id="acheter">
+    <h2>Annonces disponibles</h2>
+    <div id="annoncesList">
+      <p>Aucune annonce publiée pour le moment.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+  function toggleMenu() {
+    const menu = document.getElementById('menu');
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+  }
+
+  const form = document.getElementById('formAnnonce');
+  const annoncesList = document.getElementById('annoncesList');
+
+  // Fonction pour récupérer les annonces depuis localStorage
+  function getAnnonces() {
+    const annonces = localStorage.getItem('annonces');
+    return annonces ? JSON.parse(annonces) : [];
+  }
+
+  // Fonction pour sauvegarder les annonces dans localStorage
+  function saveAnnonces(annonces) {
+    localStorage.setItem('annonces', JSON.stringify(annonces));
+  }
+
+  // Fonction pour afficher toutes les annonces
+  function afficherAnnonces() {
+    const annonces = getAnnonces();
+    annoncesList.innerHTML = '';
+
+    if (annonces.length === 0) {
+      annoncesList.innerHTML = '<p>Aucune annonce publiée pour le moment.</p>';
+      return;
+    }
+
+    annonces.forEach((annonce, index) => {
+      const div = document.createElement('div');
+      div.classList.add('annonce');
+      div.innerHTML = `
+        <h3>${annonce.titre}</h3>
+        <p>${annonce.description}</p>
+        <p><strong>Prix :</strong> ${annonce.prix} €</p>
+        <p><strong>Contact :</strong> ${annonce.contact}</p>
+        <button class="delete-btn" data-index="${index}">Supprimer</button>
+      `;
+      annoncesList.appendChild(div);
+    });
+
+    // Ajouter les événements sur les boutons supprimer
+    document.querySelectorAll('.delete-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const i = this.getAttribute('data-index');
+        supprimerAnnonce(i);
+      });
+    });
+  }
+
+  // Fonction pour supprimer une annonce par index
+  function supprimerAnnonce(index) {
+    let annonces = getAnnonces();
+    annonces.splice(index, 1);
+    saveAnnonces(annonces);
+    afficherAnnonces();
+  }
+
+  // Gestion de la soumission du formulaire
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const titre = form.titre.value.trim();
+    const description = form.description.value.trim();
+    const prix = form.prix.value.trim();
+    const contact = form.contact.value.trim();
+
+    if (!titre || !description || !prix || !contact) {
+      alert("Merci de remplir tous les champs.");
+      return;
+    }
+
+    const nouvelleAnnonce = { titre, description, prix, contact };
+    const annonces = getAnnonces();
+    annonces.unshift(nouvelleAnnonce); // ajoute au début
+    saveAnnonces(annonces);
+
+    afficherAnnonces();
+    form.reset();
+  });
+
+  // Affiche les annonces au chargement de la page
+  afficherAnnonces();
+
+  // Cacher le menu si on clique en dehors
+  window.addEventListener('click', function(e) {
+    const menu = document.getElementById('menu');
+    const btn = document.querySelector('.menu-toggle');
+    if(menu.style.display === 'block' && !menu.contains(e.target) && e.target !== btn) {
+      menu.style.display = 'none';
+    }
+  });
+</script>
+
+</body>
+</html>
